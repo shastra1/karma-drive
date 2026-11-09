@@ -8,6 +8,16 @@
 >
 > 2026 현대자동차그룹 차량용 앱 공모전 "Code your App into Pleos App Market" 출품작.
 
+## APK (바로 설치)
+| 파일 | 내용 | 설치 대상 |
+|---|---|---|
+| [`apk/고릴라스랩_KARMADRIVE_release.apk`](apk/) | KARMA 인카 앱 (판정 · 트윈카 · 라이브 공유 서버) | Pleos Connect 에뮬레이터 (API 34) |
+| [`apk/고릴라스랩_KARMADRIVE-mobile_release.apk`](apk/) | KARMA 스마트폰 앱 (라이브 트윈 관람) | Android 9 이상 폰 · 에뮬레이터 |
+
+- 설치: APK 파일을 에뮬레이터 화면에 끌어다 놓거나 `adb install <파일>`.
+- 테스트 방법: 인카 앱 허브의 **데모 주행 4종** → 라이브 트윈(`adb forward tcp:8765 tcp:8765` → http://127.0.0.1:8765) → 기어 P → 리플레이 · 언박싱 → 정비소.
+- 실제 차량 신호: Pleos Connect **Virtual Console**(`adb forward tcp:8088 tcp:8088`)에서 기어 D · ACCEL · 조향 · 방향지시등 조작 → 인카 앱이 Pleos Vehicle SDK로 받아 판정.
+
 ## 처음 받은 사람 — 5단계로 실행하기
 1. **Android Studio**(Ladybug 이상, Gradle JDK 21)와 **Pleos Connect 에뮬레이터**(Pleos Playground 가이드)를 설치합니다.
 2. 이 저장소를 받습니다: Android Studio 시작 화면 → **Clone Repository** → 저장소 주소 붙여넣기.

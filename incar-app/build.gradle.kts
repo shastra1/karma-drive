@@ -34,6 +34,8 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
+            // 공모전 제출용: 별도 키스토어 없이 디버그 키로 서명한 release APK (실행 가능)
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
     compileOptions {
