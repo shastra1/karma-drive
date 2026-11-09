@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- 공공데이터포털 표준데이터 API 중 http로만 응답하는 경우 대비 -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">api.data.go.kr</domain>
+    </domain-config>
+</network-security-config>

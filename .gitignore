@@ -1,0 +1,15 @@
+.gradle/
+build/
+*/build/
+local.properties
+.idea/
+*.iml
+.DS_Store
+captures/
+.externalNativeBuild/
+.cxx/
+# 키 파일은 절대 커밋하지 않음
+pleos_keys.txt
+*.keystore
+*.jks
+.kotlin/

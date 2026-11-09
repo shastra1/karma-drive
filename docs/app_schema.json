@@ -1,0 +1,45 @@
+{
+  "packageName": "com.karmadrive.incar",
+  "appDescription": "A driving-habit twin car game that turns good driving manners into karma points.",
+  "invokeWord": "카르마",
+  "version": "1.0.0",
+  "actionCalls": [
+    {
+      "type": "function",
+      "function": {
+        "name": "GET_TODAY_KARMA",
+        "description": "Tell today's karma points, grade and skills so far.",
+        "parameters": { "type": "object", "properties": {} },
+        "component": "service"
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "OPEN_REPLAY",
+        "description": "Open today's driving replay when the car is parked.",
+        "parameters": { "type": "object", "properties": {} },
+        "component": "activity"
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "SEND_COUPON_ROUTE",
+        "description": "Send the nearest place where a saved coupon can be used to the navigation.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "couponType": {
+              "type": "string",
+              "enum": ["CAR_WASH", "FUEL", "MAINTENANCE"],
+              "description": "Coupon category."
+            }
+          },
+          "required": ["couponType"]
+        },
+        "component": "service"
+      }
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+# Android Studio가 만든 local.properties 파일 맨 아래에 아래 줄을 추가하고 값만 채우세요.
+# (local.properties는 .gitignore 처리되어 GitHub에 올라가지 않습니다)
+
+# 공공데이터포털(data.go.kr) 일반 인증키(Decoding) — 어린이보호구역 · 무인교통단속카메라 표준데이터
+DATA_GO_KR_KEY=
+# 국가교통정보센터(its.go.kr) 오픈API 인증키 — 돌발상황정보
+ITS_API_KEY=
+
+# Pleos (v0.2 SDK 연결 시)
+PLEOS_PROJECT_ID=
+PLEOS_CLIENT_ID=
+PLEOS_CLIENT_SECRET=

@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>KARMA 라이브 트윈</title>
+<style>
+:root{--bg:#0B1220;--s1:#141E31;--s2:#1C2942;--line:#2A3A5A;--text:#F2F5FA;--sub:#A9B6CC;--mint:#3BE8B0;--gold:#FFC857;--red:#FF6B6B;--sky:#5AB4FF}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif}
+body{min-height:100vh;padding-bottom:84px}
+.wrap{max-width:560px;margin:0 auto;padding:12px 16px}
+header{display:flex;align-items:center;gap:10px;padding:10px 16px;position:sticky;top:0;background:rgba(11,18,32,.92);backdrop-filter:blur(8px);z-index:5;max-width:560px;margin:0 auto}
+header img{width:34px;height:34px;border-radius:9px}
+header .t{flex:1}
+header .t b{display:block;font-size:17px;letter-spacing:.2px}
+header .t span{font-size:12px;color:var(--sub)}
+.pill{font-size:12px;font-weight:700;padding:5px 10px;border-radius:99px;border:1px solid var(--line);white-space:nowrap}
+.pill.live{color:#fff;background:#E53935;border-color:#E53935;animation:blink 1.4s infinite}
+.pill.park{color:var(--sky);border-color:var(--sky)}
+.pill.off{color:var(--sub)}
+@keyframes blink{50%{opacity:.55}}
+.iconbtn{background:none;border:1px solid var(--line);color:var(--sub);border-radius:10px;width:34px;height:34px;font-size:16px;cursor:pointer}
+.card{background:var(--s1);border:1px solid var(--line);border-radius:18px;padding:14px;margin:12px 0}
+.stage{position:relative;border-radius:22px;padding:14px 6px 46px;background:radial-gradient(120% 80% at 50% 0%,#203154 0%,#0E1730 70%);border:1px solid var(--line);overflow:hidden}
+.stage .road{position:absolute;left:0;right:0;bottom:0;height:22%;background:linear-gradient(#1a2338,#141b2c);border-top:2px dashed rgba(255,255,255,.08)}
+.carbox{position:relative;width:100%;margin:0 auto}
+.carbox img.car{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;filter:drop-shadow(0 14px 18px rgba(0,0,0,.45))}
+.carbox svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.carbox.shake{animation:shake .5s}
+@keyframes shake{20%{transform:translate(-8px,2px) rotate(-1.2deg)}40%{transform:translate(7px,-3px) rotate(1deg)}60%{transform:translate(-5px,2px)}80%{transform:translate(3px,0)}}
+.boom{position:absolute;font-weight:900;font-size:44px;color:#fff;text-shadow:0 0 12px #ff3d00,0 0 2px #000;pointer-events:none;animation:boom 1.1s forwards;z-index:3}
+@keyframes boom{0%{transform:scale(.2) rotate(-12deg);opacity:0}25%{transform:scale(1.25) rotate(4deg);opacity:1}100%{transform:scale(1) translateY(-40px);opacity:0}}
+.pin{cursor:pointer}
+.smoke{animation:smoke 2.4s linear infinite;transform-box:fill-box;transform-origin:center}
+@keyframes smoke{0%{transform:translateY(0) scale(.5);opacity:.75}100%{transform:translateY(-140px) scale(1.9);opacity:0}}
+.warnglow{animation:glow 1.2s ease-in-out infinite}
+@keyframes glow{50%{opacity:.35}}
+.mood{position:absolute;bottom:8px;left:10px;right:10px;background:rgba(11,18,32,.82);border:1px solid var(--line);border-radius:14px;padding:6px 10px;font-size:13px;z-index:2}
+.mood b{font-size:16px}
+.kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.kpi div{background:var(--s2);border-radius:14px;padding:10px;text-align:center}
+.kpi b{display:block;font-size:20px}
+.kpi span{font-size:12px;color:var(--sub)}
+.gauge{height:14px;border-radius:99px;background:var(--s2);overflow:hidden;margin:8px 0 4px}
+.gauge i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--gold),var(--red));transition:width .8s}
+.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.chip{font-size:12px;padding:5px 9px;border-radius:99px;border:1px solid var(--line);color:var(--sub)}
+.chip.red{color:var(--red);border-color:rgba(255,107,107,.6)}
+.chip.mint{color:var(--mint);border-color:rgba(59,232,176,.6)}
+.chip.gold{color:var(--gold);border-color:rgba(255,200,87,.6)}
+.chip.sky{color:var(--sky);border-color:rgba(90,180,255,.6)}
+h3{font-size:15px;margin:2px 0 10px;color:var(--sub);font-weight:600}
+.feed{list-style:none;margin:0;padding:0}
+.feed li{display:flex;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.feed li:first-child{border-top:0}
+.feed .em{font-size:22px;width:30px;text-align:center}
+.feed .bd{flex:1;min-width:0}
+.feed .bd b{font-size:15px}
+.feed .bd p{margin:3px 0 0;font-size:13px;color:var(--sub);line-height:1.45}
+.feed .kp{font-weight:800;font-size:14px;white-space:nowrap}
+.plus{color:var(--mint)}.minus{color:var(--red)}
+.new{animation:flash 1.6s}
+@keyframes flash{0%{background:rgba(255,82,82,.35)}100%{background:transparent}}
+.scar{display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+.scar:first-child{border-top:0}
+.num{flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:800;color:#fff;background:#FF8F00}
+.num.h{background:#E53935}
+.scar .bd{flex:1}
+.scar .bd b{font-size:16px}
+.scar .bd p{margin:4px 0 0;font-size:13px;color:var(--sub);line-height:1.5}
+.scar .bd p.r{color:var(--text);font-size:14px}
+.btn{display:block;width:100%;border:0;border-radius:14px;padding:13px;font-size:15px;font-weight:800;background:var(--mint);color:#0B1220;cursor:pointer;margin-top:8px}
+.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+.btn:disabled{opacity:.45;cursor:default}
+.hero{display:flex;gap:12px;align-items:center}
+.hero img{width:96px;height:auto;flex:none}
+.hero p{margin:0;font-size:14px;line-height:1.5}
+.stickers{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stickers button{background:var(--s2);border:1px solid var(--line);color:var(--text);border-radius:16px;padding:14px 8px;font-size:15px;cursor:pointer}
+.stickers button span{display:block;font-size:30px;margin-bottom:4px}
+input{width:100%;background:var(--s2);border:1px solid var(--line);border-radius:12px;padding:12px;color:var(--text);font-size:15px;margin-top:8px}
+nav{position:fixed;left:0;right:0;bottom:0;background:rgba(20,30,49,.97);border-top:1px solid var(--line);display:flex;justify-content:center;z-index:6;padding-bottom:env(safe-area-inset-bottom)}
+nav .in{display:flex;max-width:560px;width:100%}
+nav button{flex:1;background:none;border:0;color:var(--sub);padding:10px 0 12px;font-size:12px;cursor:pointer}
+nav button span{display:block;font-size:21px;margin-bottom:2px}
+nav button.on{color:var(--mint)}
+.tab{display:none}.tab.on{display:block}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:9;transform:translateY(105%);transition:transform .25s}
+.sheet.on{transform:none}
+.sheet .in{max-width:560px;margin:0 auto;background:var(--s1);border:1px solid var(--line);border-radius:22px 22px 0 0;padding:18px 18px 28px;box-shadow:0 -10px 30px rgba(0,0,0,.5)}
+.dim{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:8;display:none}
+.dim.on{display:block}
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:#2b0d12;border:1px solid var(--red);color:#fff;border-radius:14px;padding:10px 14px;font-size:14px;z-index:10;max-width:92%;display:none;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.toast.good{background:#0d2b22;border-color:var(--mint)}
+.empty{color:var(--sub);font-size:14px;text-align:center;padding:16px 0}
+.note{font-size:12px;color:var(--sub);line-height:1.5}
+.road{font-size:14px}
+</style>
+</head>
+<body>
+<header>
+  <img src="img/icon.webp" alt="">
+  <div class="t"><b id="carName">라이브 트윈</b><span id="sub">KARMA 앱 · 동승자 · 가족용</span></div>
+  <span id="status" class="pill off">연결 중</span>
+  <button class="iconbtn" id="setBtn" title="서버 설정">⚙</button>
+</header>
+
+<div class="wrap">
+  <!-- 라이브 -->
+  <section class="tab on" id="t-live">
+    <div class="stage">
+      <div class="road"></div>
+      <div class="mood" id="mood"></div>
+      <div class="carbox" id="carbox"><img class="car" id="carImg" alt="트윈카"><svg id="ov"></svg></div>
+    </div>
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <b id="dmgTitle">데미지</b><span class="chip" id="lvChip">Lv.0</span>
+      </div>
+      <div class="gauge"><i id="gauge" style="width:0"></i></div>
+      <div class="note" id="lvDesc"></div>
+      <div class="kpi">
+        <div><b id="kRun">0</b><span>이번 주행 KP</span></div>
+        <div><b id="kDmg">0</b><span>이번 주행 데미지</span></div>
+        <div><b id="kTotal">0</b><span>보유 KP</span></div>
+      </div>
+    </div>
+    <div class="card" id="roadCard" style="display:none">
+      <h3>지금 달리는 도로 (공공데이터 실시간 매칭)</h3>
+      <div class="road" id="road"></div>
+      <div class="row" id="roadChips" style="margin-top:8px"></div>
+    </div>
+    <div class="card">
+      <h3 id="feedTitle">실시간 판정 — 지킨 것 · 어긴 것</h3>
+      <ul class="feed" id="feed"></ul>
+    </div>
+    <p class="note">운전자는 주행 중 이 화면을 볼 수 없어요. 판정은 차량 신호(Pleos SDK)와 공공데이터(어린이보호구역 · 무인단속카메라 제한속도 · 국가교통정보센터 돌발정보)로 자동으로 이뤄지고, 응원은 주차 후 운전자에게 전달돼요.</p>
+  </section>
+
+  <!-- 상처 기록 -->
+  <section class="tab" id="t-scars">
+    <div class="card">
+      <h3>왜 망가졌을까? — 상처 하나 = 흑역사 하나</h3>
+      <div id="scarList"></div>
+    </div>
+    <div class="card">
+      <h3>이번 주행에서 지킨 것 (KP 적립)</h3>
+      <ul class="feed" id="goodList"></ul>
+    </div>
+  </section>
+
+  <!-- 정비소 -->
+  <section class="tab" id="t-garage">
+    <div class="card">
+      <div class="hero"><img src="img/c_repair.webp" alt="정비하는 카르마 드라이버"><p id="mechLine">정비 고릴라가 기다리고 있어요.</p></div>
+      <button class="btn" id="repairAll">풀 리페어</button>
+      <p class="note">주행 중에는 수리할 수 없어요. 부위 수리비는 데미지 1당 120 KP, 풀 리페어는 20% 할인.</p>
+    </div>
+    <div class="card"><h3>부위별 수리</h3><div id="repairList"></div></div>
+    <div class="card">
+      <div class="hero"><img src="img/c_wash.webp" alt="세차하는 카르마 드라이버"><p>먼지 · 잔 스크래치는 차량 화면의 개러지에서 세차 미니게임으로 공짜로 지울 수 있어요.</p></div>
+    </div>
+  </section>
+
+  <!-- 응원 -->
+  <section class="tab" id="t-cheer">
+    <div class="card">
+      <div class="hero"><img src="img/c_cheer.webp" alt="응원하는 카르마 드라이버"><p>잔소리 대신 응원 스티커! 운전자는 주행 중엔 못 보고, <b>주차하면 언박싱 화면</b>에서 한꺼번에 받아요.</p></div>
+    </div>
+    <div class="card">
+      <div class="stickers" id="stickers"></div>
+      <input id="cheerFrom" placeholder="보내는 사람 (예: 조수석, 딸)" maxlength="12">
+      <input id="cheerText" placeholder="직접 쓰기 (40자)" maxlength="40">
+      <button class="btn" id="cheerSend">직접 쓴 응원 보내기</button>
+    </div>
+    <div class="card"><h3>보낸 응원</h3><ul class="feed" id="cheerList"></ul></div>
+  </section>
+</div>
+
+<nav><div class="in">
+  <button data-t="live" class="on"><span>📡</span>라이브</button>
+  <button data-t="scars"><span>🩹</span>상처 사유</button>
+  <button data-t="garage"><span>🔧</span>정비소</button>
+  <button data-t="cheer"><span>📣</span>응원</button>
+</div></nav>
+
+<div class="dim" id="dim"></div>
+<div class="sheet" id="sheet"><div class="in" id="sheetIn"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+'use strict';
+var $ = function(id){ return document.getElementById(id); };
+function store(k, v){ try{ if(v===undefined) return localStorage.getItem(k); localStorage.setItem(k, v); }catch(e){ return null; } }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+function hhmm(t){ var d=new Date(t); return ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2); }
+
+// 서버 주소: 인카 앱이 직접 서빙하면 같은 주소, 폰 앱(file://)이면 설정값(기본 10.0.2.2:8765 = PC의 adb forward)
+var params = new URLSearchParams(location.search);
+var base = params.get('server') || store('karmaServer') || (location.protocol.indexOf('http')===0 ? location.origin : 'http://10.0.2.2:8765');
+var demo = params.get('demo') === '1';
+var state = null, seenScars = {}, seenEvents = {}, firstLoad = true, fails = 0;
+
+// ---------- 탭 ----------
+Array.prototype.forEach.call(document.querySelectorAll('nav button'), function(b){
+  b.onclick = function(){
+    Array.prototype.forEach.call(document.querySelectorAll('nav button'), function(x){ x.classList.toggle('on', x===b); });
+    Array.prototype.forEach.call(document.querySelectorAll('.tab'), function(x){ x.classList.toggle('on', x.id==='t-'+b.dataset.t); });
+    window.scrollTo(0,0);
+  };
+});
+
+function toast(msg, good){
+  var t=$('toast'); t.textContent=msg; t.className='toast'+(good?' good':''); t.style.display='block';
+  clearTimeout(toast._h); toast._h=setTimeout(function(){ t.style.display='none'; }, 3800);
+}
+function openSheet(html){ $('sheetIn').innerHTML=html; $('sheet').classList.add('on'); $('dim').classList.add('on'); }
+function closeSheet(){ $('sheet').classList.remove('on'); $('dim').classList.remove('on'); }
+$('dim').onclick = closeSheet;
+
+$('setBtn').onclick = function(){
+  openSheet('<h3>KARMA 인카 앱 연결</h3><p class="note">PC 브라우저: 인카 앱이 직접 열어 줘요 (adb forward tcp:8765 tcp:8765 → http://127.0.0.1:8765)<br>폰 에뮬레이터: http://10.0.2.2:8765</p>'+
+    '<input id="srv" value="'+esc(base)+'"><button class="btn" id="srvSave">저장하고 다시 연결</button><button class="btn ghost" id="demoBtn">'+(demo?'데모 끄기':'차 없이 데모로 보기')+'</button>');
+  $('srvSave').onclick=function(){ base=$('srv').value.trim().replace(/\/$/,''); store('karmaServer', base); demo=false; fails=0; closeSheet(); poll(); };
+  $('demoBtn').onclick=function(){ demo=!demo; closeSheet(); if(demo){ Demo.start(); } poll(); };
+};
+
+// ---------- 트윈카 상처 SVG ----------
+function rnd(seed){ var s = seed % 2147483647; if (s <= 0) s += 2147483646; return function(){ s = s * 16807 % 2147483647; return (s-1)/2147483646; }; }
+function hash(str){ var h=0; for(var i=0;i<str.length;i++){ h=(h*31+str.charCodeAt(i))|0; } return Math.abs(h)+1; }
+
+function scarSvg(s, cx, cy, r){
+  var R=rnd(hash(s.id)), g='';
+  switch(s.kind){
+    case 'DUST':
+      for(var i=0;i<9;i++){ var a=R()*6.28, d=R()*r; g+='<circle cx="'+(cx+Math.cos(a)*d)+'" cy="'+(cy+Math.sin(a)*d*0.6)+'" r="'+(r*(0.08+R()*0.12))+'" fill="rgba(122,106,85,.55)"/>'; }
+      break;
+    case 'SCRATCH':
+      for(var j=0;j<4;j++){ var y=cy-r*0.3+j*r*0.2;
+        g+='<line x1="'+(cx-r*0.9)+'" y1="'+y+'" x2="'+(cx+r*0.7)+'" y2="'+(y-r*0.35)+'" stroke="rgba(255,255,255,.88)" stroke-width="'+(r*0.05)+'" stroke-linecap="round"/>';
+        g+='<line x1="'+(cx-r*0.85)+'" y1="'+(y+r*0.05)+'" x2="'+(cx+r*0.6)+'" y2="'+(y-r*0.28)+'" stroke="rgba(64,32,32,.6)" stroke-width="'+(r*0.03)+'" stroke-linecap="round"/>'; }
+      break;
+    case 'DENT': case 'SMOKE':
+      g+='<ellipse cx="'+cx+'" cy="'+cy+'" rx="'+r+'" ry="'+(r*0.65)+'" fill="url(#dentG)"/>';
+      g+='<path d="M'+(cx-r*0.65)+' '+(cy-r*0.05)+' Q'+cx+' '+(cy-r*0.55)+' '+(cx+r*0.65)+' '+(cy-r*0.05)+'" stroke="rgba(255,255,255,.8)" stroke-width="'+(r*0.06)+'" fill="none"/>';
+      g+='<path d="M'+(cx-r*0.55)+' '+(cy+r*0.05)+' Q'+cx+' '+(cy+r*0.4)+' '+(cx+r*0.55)+' '+(cy+r*0.05)+'" stroke="rgba(0,0,0,.6)" stroke-width="'+(r*0.08)+'" fill="none"/>';
+      if(s.kind==='SMOKE'){ for(var k=0;k<4;k++){ g+='<circle class="smoke" style="animation-delay:'+(k*0.6)+'s" cx="'+(cx+(k%2?r*0.2:-r*0.2))+'" cy="'+(cy-r*0.4)+'" r="'+(r*0.45)+'" fill="rgba(154,164,178,.7)"/>'; } }
+      break;
+    case 'CRACK':
+      for(var c=0;c<8;c++){ var an=c*0.785+R()*0.3, len=r*(0.6+R()*0.6), ex=cx+Math.cos(an)*len, ey=cy+Math.sin(an)*len, mx=cx+Math.cos(an)*len*0.55, my=cy+Math.sin(an)*len*0.55;
+        g+='<line x1="'+cx+'" y1="'+cy+'" x2="'+ex+'" y2="'+ey+'" stroke="#fff" stroke-width="'+(r*0.035)+'"/>';
+        g+='<line x1="'+mx+'" y1="'+my+'" x2="'+(mx+Math.cos(an+0.8)*len*0.3)+'" y2="'+(my+Math.sin(an+0.8)*len*0.3)+'" stroke="#fff" stroke-width="'+(r*0.025)+'"/>'; }
+      g+='<circle cx="'+cx+'" cy="'+cy+'" r="'+(r*0.08)+'" fill="#fff"/>';
+      break;
+    case 'SOOT':
+      g+='<circle cx="'+cx+'" cy="'+cy+'" r="'+(r*1.2)+'" fill="url(#sootG)"/>';
+      break;
+    case 'WARNING_LIGHT':
+      g+='<circle class="warnglow" cx="'+cx+'" cy="'+cy+'" r="'+(r*0.85)+'" fill="rgba(255,179,0,.45)"/><circle cx="'+cx+'" cy="'+cy+'" r="'+(r*0.45)+'" fill="#FFB300"/>';
+      g+='<text x="'+cx+'" y="'+(cy+r*0.2)+'" text-anchor="middle" font-size="'+(r*0.6)+'" font-weight="900" fill="#3A2A00">!</text>';
+      break;
+    case 'BROKEN_LAMP':
+      g+='<circle cx="'+cx+'" cy="'+cy+'" r="'+(r*0.75)+'" fill="rgba(43,43,43,.85)"/>';
+      g+='<path d="M'+(cx-r*0.5)+' '+(cy-r*0.2)+' L'+cx+' '+(cy+r*0.1)+' L'+(cx+r*0.45)+' '+(cy-r*0.4)+' M'+(cx-r*0.2)+' '+(cy+r*0.5)+' L'+cx+' '+(cy+r*0.1)+' L'+(cx+r*0.5)+' '+(cy+r*0.3)+'" stroke="#fff" stroke-width="'+(r*0.06)+'" fill="none"/>';
+      for(var q=0;q<5;q++){ g+='<circle cx="'+(cx+(R()-0.5)*r*2)+'" cy="'+(cy+r*(0.8+R()*0.4))+'" r="'+(r*0.06)+'" fill="#BFD9F2"/>'; }
+      break;
+    default:
+      g+='<circle cx="'+cx+'" cy="'+cy+'" r="'+(r*0.5)+'" fill="rgba(255,112,67,.7)"/>';
+  }
+  return g;
+}
+
+function dirtSvg(level, body, W, H){
+  if(!level) return '';
+  var R=rnd(7), g='';
+  for(var i=0;i<level*10;i++){
+    var x=(body[0]+R()*(body[2]-body[0]))*W, y=(body[1]+(0.35+R()*0.6)*(body[3]-body[1]))*H, rust= level>=4 && i%3===0;
+    g+='<circle cx="'+x+'" cy="'+y+'" r="'+(W*(0.006+R()*0.012))+'" fill="'+(rust?'rgba(192,87,43,.6)':'rgba(122,106,85,.45)')+'"/>';
+  }
+  return g;
+}
+
+var lastImg = '';
+function drawCar(st){
+  var car=st.car, W=1000, H=Math.round(1000/car.aspect);
+  var box=$('carbox'); box.style.aspectRatio = car.aspect;
+  box.style.width = car.aspect < 1.2 ? '78%' : '100%';
+  if(lastImg!==car.image){ $('carImg').src='img/'+car.image+'.webp'; lastImg=car.image; }
+  var ov=$('ov'); ov.setAttribute('viewBox','0 0 '+W+' '+H);
+  var defs='<defs><radialGradient id="dentG"><stop offset="0" stop-color="rgba(20,20,20,.85)"/><stop offset=".6" stop-color="rgba(0,0,0,.2)"/><stop offset="1" stop-color="rgba(0,0,0,0)"/></radialGradient>'+
+    '<radialGradient id="sootG"><stop offset="0" stop-color="rgba(17,17,17,.85)"/><stop offset=".6" stop-color="rgba(34,34,34,.4)"/><stop offset="1" stop-color="rgba(0,0,0,0)"/></radialGradient></defs>';
+  var g=defs + (car.damageBaked ? '' : dirtSvg(car.level, car.body, W, H));
+  var per={}, pins='';
+  st.scars.forEach(function(s, i){
+    var n=per[s.part]||0; per[s.part]=n+1;
+    var cx=s.x*W + n*W*0.025, cy=s.y*H - n*H*0.02;
+    g+=scarSvg(s, cx, cy, W*0.085);
+    var px=s.x*W + n*W*0.045, py=s.y*H - H*0.1, pr=W*0.028, heavy=s.damage>=8;
+    pins+='<g class="pin" data-i="'+i+'"><line x1="'+px+'" y1="'+py+'" x2="'+(s.x*W)+'" y2="'+(s.y*H)+'" stroke="rgba(255,255,255,.8)" stroke-width="3"/>'+
+      '<circle cx="'+px+'" cy="'+py+'" r="'+pr+'" fill="'+(heavy?'#E53935':'#FF8F00')+'" stroke="#fff" stroke-width="5"/>'+
+      '<text x="'+px+'" y="'+(py+pr*0.38)+'" text-anchor="middle" font-size="'+(pr*1.05)+'" font-weight="800" fill="#fff">'+(i+1)+'</text></g>';
+  });
+  ov.innerHTML = g + pins;
+  Array.prototype.forEach.call(ov.querySelectorAll('.pin'), function(p){
+    p.onclick=function(){ showScar(st.scars[+p.dataset.i], +p.dataset.i+1); };
+  });
+}
+
+function showScar(s, n){
+  openSheet('<div class="row"><span class="num'+(s.damage>=8?' h':'')+'">'+n+'</span><b style="font-size:18px">'+esc(s.emoji+' '+s.partTitle+' '+s.kindTitle)+'</b></div>'+
+    '<p style="font-size:16px;line-height:1.55;margin:12px 0 6px"><b>사유</b> · '+esc(s.reason)+'</p>'+
+    '<div class="row"><span class="chip red">'+esc(s.title)+'</span><span class="chip red">카르마 빚 '+s.kp+' KP</span><span class="chip gold">데미지 +'+s.damage+'</span><span class="chip">'+hhmm(s.t)+(s.place?' · '+esc(s.place):'')+'</span></div>'+
+    '<p class="note" style="margin-top:10px">판정 근거: '+esc(s.source)+'</p>'+
+    '<button class="btn ghost" id="closeS">닫기</button>');
+  $('closeS').onclick=closeSheet;
+}
+
+function boom(s){
+  var box=$('carbox'); box.classList.remove('shake'); void box.offsetWidth; box.classList.add('shake');
+  var b=document.createElement('div'); b.className='boom'; b.textContent= s.damage>=8 ? '쾅!' : '찌익!';
+  b.style.left=(s.x*100-8)+'%'; b.style.top=(s.y*100-12)+'%';
+  document.querySelector('.stage').appendChild(b); setTimeout(function(){ b.remove(); }, 1200);
+  try{ if(navigator.vibrate) navigator.vibrate([80,40,120]); }catch(e){}
+  toast(s.emoji+' '+s.partTitle+' '+s.kindTitle+' — '+s.reason);
+}
+
+// ---------- 렌더 ----------
+function render(st){
+  state=st;
+  var car=st.car, live=st.live, running=live.running;
+  $('carName').textContent = car.name+' · '+car.stageName;
+  $('sub').textContent = demo ? '데모 데이터 (차 연결 없음)' : 'KARMA 앱 · 라이브 트윈';
+  var pill=$('status');
+  if(running){ pill.className='pill live'; pill.textContent='● LIVE 주행 중'; }
+  else { pill.className='pill park'; pill.textContent='🅿 주차 중'; }
+  $('mood').innerHTML='<b>'+esc(car.moodEmoji)+'</b> '+esc(car.mood)+' · “'+esc(car.line)+'”';
+  drawCar(st);
+  $('dmgTitle').textContent='데미지 '+car.damage+' / 100';
+  $('lvChip').textContent='Lv.'+car.level+' '+car.levelName; $('lvChip').className='chip '+(car.level>=4?'red':(car.level>=1?'gold':'mint'));
+  $('gauge').style.width=car.damage+'%';
+  $('lvDesc').textContent=car.levelDesc+' · 상처 '+st.scars.length+'곳 · '+st.tier+' 리그';
+  $('kRun').textContent=(live.runKp>0?'+':'')+live.runKp; $('kRun').className=live.runKp>=0?'plus':'minus';
+  $('kDmg').textContent='+'+live.runDamage; $('kTotal').textContent=st.kp.toLocaleString();
+
+  var rd=live.road;
+  if(running && rd){
+    $('roadCard').style.display='block';
+    $('road').innerHTML='<b>'+esc(rd.name||'도로')+'</b> · 제한 <b>'+rd.limit+'km/h</b> <span class="note">('+esc(rd.limitSource)+')</span>';
+    var ch='';
+    if(rd.school) ch+='<span class="chip red">🚸 어린이보호구역 · '+esc(rd.school)+'</span>';
+    if(rd.incident) ch+='<span class="chip gold">🚧 돌발 · '+esc(rd.incident)+'</span>';
+    if(rd.signal) ch+='<span class="chip sky">🚦 '+esc(rd.signal)+'</span>';
+    ch+='<span class="chip">🛣 '+live.distanceKm.toFixed(1)+'km · 콤보 '+live.combo+'</span>';
+    $('roadChips').innerHTML=ch;
+  } else $('roadCard').style.display='none';
+
+  $('feedTitle').textContent = running ? '실시간 판정 — 지킨 것 · 어긴 것' : (st.lastRun ? '지난 주행 판정 · '+st.lastRun.grade+'등급 '+(st.lastRun.kp>0?'+':'')+st.lastRun.kp+' KP' : '아직 주행 기록이 없어요');
+  var evs=st.events.slice().reverse(), fh='';
+  evs.forEach(function(e){
+    var key=e.t+e.type, isNew=!firstLoad && !seenEvents[key]; seenEvents[key]=1;
+    var bad=e.kind==='BLACK';
+    fh+='<li class="'+(isNew?'new':'')+'"><div class="em">'+esc(e.emoji)+'</div><div class="bd"><b>'+esc(e.title)+'</b> <span class="note">'+hhmm(e.t)+'</span>'+
+      '<p>'+esc(e.reason||e.detail)+(e.part?' → <b style="color:var(--red)">'+esc(e.part)+'</b>':'')+'</p></div>'+
+      '<div class="kp '+(e.kp>=0?'plus':'minus')+'">'+(e.kp>0?'+':'')+e.kp+' KP'+(e.damage?'<br><span class="minus">데미지 +'+e.damage+'</span>':'')+'</div></li>';
+  });
+  $('feed').innerHTML = fh || '<li class="empty">출발하면 여기에 판정이 실시간으로 쌓여요</li>';
+
+  // 새 상처 → 쾅!
+  st.scars.forEach(function(s){ if(!seenScars[s.id]){ if(!firstLoad) boom(s); seenScars[s.id]=1; } });
+
+  // 상처 사유 탭
+  var sh='';
+  st.scars.slice().reverse().forEach(function(s){
+    var n=st.scars.indexOf(s)+1;
+    sh+='<div class="scar"><span class="num'+(s.damage>=8?' h':'')+'">'+n+'</span><div class="bd"><b>'+esc(s.emoji+' '+s.partTitle+' '+s.kindTitle)+'</b>'+
+      '<p class="r">사유: '+esc(s.reason)+'</p><p>'+esc(s.title)+' · '+hhmm(s.t)+(s.place?' · '+esc(s.place):'')+' · 카르마 빚 '+s.kp+' KP · 데미지 +'+s.damage+'</p><p>근거: '+esc(s.source)+'</p></div></div>';
+  });
+  $('scarList').innerHTML = sh || '<div class="empty">상처가 없어요. 쇼룸 컨디션! ✨</div>';
+  var gh='';
+  st.events.filter(function(e){ return e.kind==='SKILL'; }).reverse().forEach(function(e){
+    gh+='<li><div class="em">'+esc(e.emoji)+'</div><div class="bd"><b>'+esc(e.title)+'</b><p>'+esc(e.detail)+'</p></div><div class="kp plus">+'+e.kp+' KP</div></li>';
+  });
+  $('goodList').innerHTML = gh || '<li class="empty">아직 없어요</li>';
+
+  // 정비소
+  $('mechLine').innerHTML = st.scars.length ? '정비 고릴라: “상처 <b>'+st.scars.length+'곳</b>, 전부 고치면 <b>'+st.repairAllCost.toLocaleString()+' KP</b>!”' : '정비 고릴라: “고칠 데가 없네! 반짝반짝.”';
+  $('repairAll').textContent='🔧 풀 리페어 · '+st.repairAllCost.toLocaleString()+' KP';
+  $('repairAll').disabled = running || !st.scars.length;
+  var rh='';
+  st.scars.forEach(function(s, i){
+    rh+='<div class="scar"><span class="num'+(s.damage>=8?' h':'')+'">'+(i+1)+'</span><div class="bd"><b>'+esc(s.partTitle+' '+s.kindTitle)+'</b><p>'+esc(s.title)+' · 데미지 '+s.damage+'</p>'+
+      '<button class="btn ghost" data-id="'+esc(s.id)+'" '+(running?'disabled':'')+'>수리 · '+s.cost.toLocaleString()+' KP</button></div></div>';
+  });
+  $('repairList').innerHTML = rh || '<div class="empty">수리할 곳이 없어요</div>';
+  Array.prototype.forEach.call(document.querySelectorAll('#repairList button'), function(b){ b.onclick=function(){ repair('id='+encodeURIComponent(b.dataset.id)); }; });
+
+  var ch2='';
+  st.cheers.slice().reverse().forEach(function(c){ ch2+='<li><div class="em">'+esc(c.emoji)+'</div><div class="bd"><b>'+esc(c.from)+'</b> <span class="note">'+hhmm(c.t)+'</span><p>'+esc(c.text)+'</p></div></li>'; });
+  $('cheerList').innerHTML = ch2 || '<li class="empty">아직 보낸 응원이 없어요</li>';
+  firstLoad=false;
+}
+
+// ---------- 서버 통신 ----------
+function api(path, method){
+  if(demo) return Demo.api(path, method);
+  return fetch(base+path, {method: method||'GET', cache:'no-store'}).then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); });
+}
+function poll(){
+  api('/api/state').then(function(st){ fails=0; render(st); }).catch(function(){
+    fails++;
+    if(fails>=3 && !demo){
+      $('status').className='pill off'; $('status').textContent='차와 연결 안 됨';
+      $('sub').textContent='⚙에서 서버 주소 확인 · 또는 데모로 보기';
+      if(!state){ demo=true; Demo.start(); toast('차와 연결되지 않아 데모 데이터로 보여 드려요', true); }
+    }
+  });
+}
+function repair(q){
+  api('/api/repair?'+q, 'POST').then(function(r){ toast(r.message, r.ok); poll(); });
+}
+var STICKERS=[['👍','잘하고 있어!'],['🐢','천천히 가도 괜찮아'],['❤️','안전운전 사랑해'],['🚸','스쿨존은 거북이처럼'],['☕','도착하면 커피 쏠게'],['🔥','오늘 콤보 가자!']];
+$('stickers').innerHTML=STICKERS.map(function(s,i){ return '<button data-i="'+i+'"><span>'+s[0]+'</span>'+esc(s[1])+'</button>'; }).join('');
+function cheer(emoji, text){
+  var from=$('cheerFrom').value.trim()||'동승자';
+  store('cheerFrom', from);
+  api('/api/cheer?emoji='+encodeURIComponent(emoji)+'&text='+encodeURIComponent(text)+'&from='+encodeURIComponent(from), 'POST')
+    .then(function(){ toast(emoji+' 응원을 보냈어요 · 운전자는 주차 후에 받아요', true); poll(); });
+}
+Array.prototype.forEach.call(document.querySelectorAll('#stickers button'), function(b){ b.onclick=function(){ var s=STICKERS[+b.dataset.i]; cheer(s[0], s[1]); }; });
+$('cheerSend').onclick=function(){ var t=$('cheerText').value.trim(); if(!t) return; cheer('💬', t); $('cheerText').value=''; };
+$('cheerFrom').value = store('cheerFrom') || '';
+$('repairAll').onclick=function(){ repair('all=1'); };
+
+// ---------- 데모 모드 (차 없이 KARMA 앱만 설치한 사람 · 발표용) ----------
+var Demo = (function(){
+  var t0=0, kp=12450, cheers=[], scars=[], events=[], started=false, repaired={};
+  var OLD={BUMPER:[.30,.78],HOOD:[.36,.40],WINDSHIELD:[.56,.18],HEADLAMP:[.09,.56],FENDER:[.73,.52],DOOR:[.87,.44],WHEEL:[.67,.83],EXHAUST:[.95,.80],INTERIOR:[.66,.27]};
+  var PT={BUMPER:'앞 범퍼',HOOD:'보닛',WINDSHIELD:'앞 유리',HEADLAMP:'헤드램프',FENDER:'앞 펜더',DOOR:'운전석 도어',WHEEL:'앞 바퀴',EXHAUST:'배기구',INTERIOR:'실내 계기판'};
+  var KT={DENT:'찌그러짐',SMOKE:'찌그러짐 + 연기',CRACK:'금 · 크랙',BROKEN_LAMP:'램프 파손',SCRATCH:'긁힘'};
+  // 트윈카 수난 시대 시나리오 (인카 앱 'wreck'과 같은 순서)
+  var SCRIPT=[
+    {at:2,  e:{type:'ALL_BELT_START',title:'올 벨트 스타트',emoji:'🔒',kind:'SKILL',kp:3,damage:0,detail:'출발 전 안전벨트 착용'}},
+    {at:8,  e:{type:'SCHOOL_ZONE_VIOLATION',title:'스쿨존 침공',emoji:'🚸',kind:'BLACK',kp:-100,damage:20,detail:'논현초등학교 앞(데모) · 제한 30 / 최고 45km/h',reason:'어린이보호구역 시속 30 준수 위반 · 논현초등학교 앞(데모) · 제한 30 / 최고 45km/h',part:'HOOD',kindS:'SMOKE',source:'공공데이터포털 · 전국어린이보호구역표준데이터 + 차속'}, road:{school:'논현초등학교 앞(데모)',limit:30,limitSource:'어린이보호구역'}},
+    {at:15, e:{type:'RIGHT_TURN_PASS',title:'우회전 패싱',emoji:'↪',kind:'BLACK',kp:-30,damage:5,detail:'학동사거리 횡단보도 · 20km/h로 회전',reason:'우회전 전 횡단보도 일시정지 안 함 · 학동사거리 횡단보도 · 20km/h로 회전',part:'FENDER',kindS:'DENT',source:'방향지시등 · 조향 · 차속 + 횡단보도 위치'}},
+    {at:21, e:{type:'RED_LIGHT',title:'레드카드',emoji:'🔴',kind:'BLACK',kp:-100,damage:0,detail:'학동역 교차로 · 적색 신호에 정지선 통과',reason:'적색 신호 위반 · 학동역 교차로 · 적색 신호에 정지선 통과',part:'HEADLAMP',kindS:'BROKEN_LAMP',source:'교차로 신호 · 정지선 정보 + 차속 (실시간 신호 API 확보 전 데모)'}, road:{signal:'학동역 교차로 RED'}},
+    {at:27, e:{type:'BUTTER_DRIVING',title:'버터 드라이빙',emoji:'🧈',kind:'SKILL',kp:2,damage:0,detail:'1km 동안 최대 0.18g'}},
+    {at:30, e:{type:'OVERSPEED_SCANDAL',title:'과속 스캔들(대)',emoji:'🚨',kind:'BLACK',kp:-50,damage:0,detail:'제한 50km/h 구간 78km/h (무인교통단속카메라 데이터)',reason:'제한속도 20km/h 넘게 초과 5초 이상 · 제한 50km/h 구간 78km/h',part:'WINDSHIELD',kindS:'CRACK',source:'공공데이터포털 · 전국무인교통단속카메라표준데이터(제한속도) + 차속'}},
+    {at:36, e:{type:'SIGNAL_MISSING',title:'깜빡이 실종 사건',emoji:'👻',kind:'BLACK',kp:-10,damage:0,detail:'방향 전환 · 방향지시등 없음',reason:'방향지시등 없이 차선 변경 · 회전',part:'DOOR',kindS:'SCRATCH',source:'Vehicle SDK · 방향지시등 + 조향각'}},
+    {at:42, end:true}
+  ];
+  var CYCLE=60;
+  function start(){ if(started) return; started=true; t0=Date.now(); }
+  function now(){ return ((Date.now()-t0)/1000) % CYCLE; }
+  function build(){
+    var s=now(), cycleStart=Date.now()-s*1000, running=s<42, ev=[], road={name:'논현로(데모)',limit:50,limitSource:'무인교통단속카메라 데이터(데모)',school:null,incident:null,signal:null}, runKp=0, runDmg=0;
+    SCRIPT.forEach(function(x){
+      if(x.end || s<x.at) return;
+      var e=Object.assign({t:cycleStart+x.at*1000,place:'논현로(데모)'}, x.e);
+      ev.push({type:e.type,title:e.title,emoji:e.emoji,kind:e.kind,kp:e.kp,damage:e.damage,detail:e.detail,reason:e.reason||e.detail,place:e.place,t:e.t,part:e.part?PT[e.part]+' '+KT[e.kindS]:null});
+      runKp+=e.kp; runDmg+=e.damage;
+      if(x.road && s<x.at+5) Object.assign(road, x.road);
+      if(e.kind==='BLACK'){
+        var id='demo-'+Math.floor(cycleStart/1000)+'-'+e.type;
+        if(!repaired[id]) scarsMap[id]={id:id,type:e.type,title:e.title,emoji:e.emoji,part:e.part,partTitle:PT[e.part],kind:e.kindS,kindTitle:KT[e.kindS],damage:e.damage,kp:e.kp,reason:e.reason,place:e.place,source:e.source,t:e.t,cost:Math.max(100,e.damage*120),x:OLD[e.part][0],y:OLD[e.part][1]};
+      }
+    });
+    if(s<1){ Object.keys(scarsMap).forEach(function(k){ if(k.indexOf('demo-'+Math.floor(cycleStart/1000))!==0) delete scarsMap[k]; }); }
+    var list=Object.keys(scarsMap).map(function(k){ return scarsMap[k]; }).sort(function(a,b){ return a.t-b.t; });
+    var dmg=Math.min(100, list.reduce(function(a,b){ return a+b.damage; },0));
+    var lv=Math.min(5, Math.floor((dmg+19)/20));
+    var LV=[['쇼룸 컨디션','반짝반짝'],['먼지 · 잔 스크래치','세차 한 번이면 OK'],['도어 긁힘','살짝 삐졌어요'],['범퍼 찍힘','정비가 필요해요'],['유리 금 · 휠 휨','KP 적립 절반 · 회생 미션'],['연기 · 램프 파손','쿠폰몰 잠금 · 48시간 회생 미션']];
+    var asp={old_lv4:1090/1113,old_lv5:1148/1169}[ 'old_lv'+lv ] || 1090/753;
+    var body={old_lv4:[0,.33,.98,1],old_lv5:[.04,.32,.97,.97]}['old_lv'+lv] || [0,0,1,1];
+    list.forEach(function(sc){ var a=OLD[sc.part]; sc.x=body[0]+a[0]*(body[2]-body[0]); sc.y=body[1]+a[1]*(body[3]-body[1]); });
+    var hurt=dmg>0;
+    return {ts:Date.now(),
+      car:{name:'똥차1호',stage:0,stageName:'Stage 0',model:'OLD',image:'old_lv'+lv,damageBaked:true,aspect:asp,body:body,damage:dmg,level:lv,levelName:LV[lv][0],levelDesc:LV[lv][1],
+        mood:hurt?'아픔':'평온',moodEmoji:hurt?'🤕':'🙂',line:hurt?'범퍼가 좀 아파… 3일만 살살 부탁해.':'오늘도 무사히 도착. 수고했어.'},
+      kp:kp,tier:'실버',repairAllCost:Math.floor(list.reduce(function(a,b){ return a+b.cost; },0)*0.8),
+      live:{running:running,replaying:true,title:'트윈카 수난 시대 (데모)',gear:running?'D':'P',runKp:runKp,runDamage:runDmg,combo:0,distanceKm:s*0.03,startMs:cycleStart,road:running?road:null},
+      events:ev,scars:list,cheers:cheers.slice(-10),today:{runs:1,kp:runKp},
+      lastRun:running?null:{grade:'D',kp:runKp,damage:runDmg,mq:25,distanceKm:1.3,startMs:cycleStart,endMs:cycleStart+42000}};
+  }
+  var scarsMap={};
+  function api(path, method){
+    var q=new URLSearchParams(path.split('?')[1]||'');
+    if(path.indexOf('/api/cheer')===0){ cheers.push({emoji:q.get('emoji'),text:q.get('text'),from:q.get('from'),t:Date.now()}); return Promise.resolve({ok:true}); }
+    if(path.indexOf('/api/repair')===0){
+      var st=build();
+      if(st.live.running) return Promise.resolve({ok:false,message:'주행 중에는 수리할 수 없어요'});
+      var ids=q.get('all')==='1'?Object.keys(scarsMap):[q.get('id')];
+      var cost=0; ids.forEach(function(id){ if(scarsMap[id]){ cost+=scarsMap[id].cost; repaired[id]=1; delete scarsMap[id]; } });
+      if(q.get('all')==='1') cost=Math.floor(cost*0.8);
+      kp-=cost; return Promise.resolve({ok:true,message:'수리 완료 (−'+cost+' KP)'});
+    }
+    return Promise.resolve(build());
+  }
+  return {start:start, api:api};
+})();
+
+if(demo) Demo.start();
+poll();
+setInterval(poll, 1000);
+})();
+</script>
+</body>
+</html>
